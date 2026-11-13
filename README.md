@@ -17,6 +17,13 @@
   </p>
 </div>
 
+> **Fork (bonkboykz/whiteboard, branch `tailnet-hosts`).** Agents on any Mac
+> or Linux machine of a Tailscale tailnet draw boards that Whiteboard Desktop
+> on one Mac shows and edits, over SSH, with nothing exposed to the network.
+> Setup: [`tailnet/README.md`](tailnet/README.md). In short, on the viewing
+> Mac run `tailnet/sync-hosts.sh mac cachy zephyr`, then connect each host's
+> agent to its own `whiteboard mcp`.
+
 Whiteboard is an open-source desktop app where humans and agents can architect software together in a common workspace.
 
 Whiteboard plugs into the tools you already use - e.g. Claude Code, Codex, etc. – and gives your agent an SDK to draw on an in-app canvas to describe its work.

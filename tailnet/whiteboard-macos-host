@@ -1,0 +1,39 @@
+#!/bin/sh
+# Whiteboard CLI for a macOS *host*: a Mac whose agents draw boards that
+# Whiteboard Desktop on another Mac shows over SSH (see tailnet/README.md).
+#
+# Installed by tailnet/sync-hosts.sh as ~/.local/bin/whiteboard on the host.
+# Do not open Whiteboard.app on a host: Desktop would rewrite this file with
+# its own shim and take over ~/.dev, and the viewing Mac would lose the host.
+#
+# Why it exists: with Whiteboard.app present, `whiteboard mcp` waits for a
+# local Desktop and never uses the headless server that `remote attach`
+# starts. DEV_REVIEW_SERVER_DIR points mcp/api at that server instead, and
+# the server is started here when the viewing Mac has not attached yet, so
+# agents can draw while it is asleep.
+
+APP="${WHITEBOARD_APP:-/Applications/Whiteboard.app}"
+RUNTIME="$APP/Contents/MacOS/Whiteboard"
+CLI="$APP/Contents/Resources/app/review-runtime/dist/cli.js"
+
+if [ ! -x "$RUNTIME" ] || [ ! -f "$CLI" ]; then
+	echo "Whiteboard is not installed at $APP. Run tailnet/sync-hosts.sh on the viewing Mac." >&2
+	exit 1
+fi
+
+export DEV_REVIEW_HOME="${DEV_REVIEW_HOME:-$HOME/.dev}"
+export DEV_REVIEW_SERVER_DIR="${DEV_REVIEW_SERVER_DIR:-$DEV_REVIEW_HOME}"
+export DEV_FAST_REVIEW_CLI_NO_DELEGATE=1
+export ELECTRON_RUN_AS_NODE=1
+
+run() { "$RUNTIME" "$CLI" "$@"; }
+
+case "$1" in
+mcp | api)
+	if ! run server status --json >/dev/null 2>&1; then
+		run server start --detach >/dev/null 2>&1 || true
+	fi
+	;;
+esac
+
+exec "$RUNTIME" "$CLI" "$@"
